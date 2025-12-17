@@ -20,7 +20,7 @@ class ProductionLog(Base):
     remarks = Column(String, nullable=True)
 
     revision_count = Column(Integer, nullable=False, default=1)
-    is_active = Column(Boolean, nullable=False, default=True)
+    is_active = Column(Boolean, nullable=False, default=False)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 

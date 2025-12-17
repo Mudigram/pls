@@ -2,38 +2,40 @@ from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException
 from app.db.models.production_log import ProductionLog
 from app.schemas.production_log import ProductionLogUpdate
+from datetime import date, time
 
 
-def create_production_log(db: Session, data):
-    # 1. Prevent duplicate active logs for the same moment
+def create_production_log(
+    db: Session,
+    well_id: int,
+    production_date: date,
+    oil_bbl: float,
+    gas_mscf: float,
+    water_bbl: float,
+    remarks: str | None = None,
+):
     existing_log = (
         db.query(ProductionLog)
         .filter(
-            ProductionLog.well_id == data.well_id,
-            ProductionLog.log_date == data.log_date,
-            ProductionLog.log_time == data.log_time,
+            ProductionLog.well_id == well_id,
+            ProductionLog.production_date == production_date,
             ProductionLog.is_active == True
         )
         .first()
     )
 
     if existing_log:
-        raise HTTPException(
-            status_code=400,
-            detail="An active production log already exists for this well at the specified date and time"
-        )
+        raise ValueError("Active production log already exists")
 
-    # 2. Create first revision
     new_log = ProductionLog(
-        well_id=data.well_id,
-        log_date=data.log_date,
-        log_time=data.log_time,
-        oil_bbl=data.oil_bbl,
-        gas_mscf=data.gas_mscf,
-        water_bbl=data.water_bbl,
-        remarks=data.remarks,
-        revision_count=1,
-        is_active=True
+        well_id=well_id,
+        production_date=production_date,
+        oil_bbl=oil_bbl,
+        gas_mscf=gas_mscf,
+        water_bbl=water_bbl,
+        remarks=remarks,
+        revision_count=0,
+        is_active=True,
     )
 
     db.add(new_log)
@@ -42,6 +44,35 @@ def create_production_log(db: Session, data):
 
     return new_log
 
+
+# def update_production_log(
+#     db: Session,
+#     log_id: int,
+#     oil_bbl: float | None = None,
+#     gas_mscf: float | None = None,
+#     water_bbl: float | None = None,
+# ):
+#     log = db.query(ProductionLog).filter(
+#         ProductionLog.id == log_id,
+#         ProductionLog.is_active == True
+#     ).first()
+
+#     if not log:
+#         raise ValueError("Production log not found")
+
+#     if oil_bbl is not None:
+#         log.oil_bbl = oil_bbl
+#     if gas_mscf is not None:
+#         log.gas_mscf = gas_mscf
+#     if water_bbl is not None:
+#         log.water_bbl = water_bbl
+
+#     log.revision_count += 1
+#     log.updated_at = datetime.utcnow()
+
+#     db.commit()
+#     db.refresh(log)
+#     return log
 
 def revise_production_log(
     db: Session,
