@@ -68,7 +68,7 @@ def test_revise_production_log_creates_new_revision(db):
     )
 
     # New record created
-    assert revised.id != original.id
+    assert cast(int, revised.id) != original.id
     assert cast(float, revised.oil_bbl) == 120.0
     assert cast(float, revised.gas_mscf) == 50.0
     assert cast(float, revised.water_bbl) == 20.0
@@ -80,3 +80,6 @@ def test_revise_production_log_creates_new_revision(db):
     # Old log retired
     db.refresh(original)
     assert cast(bool, original.is_active) is False
+
+   
+    

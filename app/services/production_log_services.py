@@ -76,7 +76,7 @@ def create_production_log(
 
 def revise_production_log(
     db: Session,
-    log_id: int,
+    log_id: int ,
     update: ProductionLogUpdate
 ):
     # 1. Fetch active log
