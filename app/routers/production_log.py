@@ -9,7 +9,7 @@ from app.services.production_log_services import create_production_log, revise_p
 router = APIRouter(prefix="/production-logs", tags=["Production Logs"])
 @router.post("/", response_model=ProductionLogResponse)
 def add_production_log(log: ProductionLogCreate, db: Session = Depends(get_db)):
-    new_log = create_production_log(db, log)
+    new_log = create_production_log(db, log=log)
     return new_log
 
 @router.get("/", response_model=list[ProductionLogResponse])

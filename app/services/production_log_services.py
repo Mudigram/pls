@@ -5,20 +5,18 @@ from app.schemas.production_log import ProductionLogUpdate
 from datetime import date, time
 
 
+from app.schemas.production_log import ProductionLogCreate
+
 def create_production_log(
     db: Session,
-    well_id: int,
-    production_date: date,
-    oil_bbl: float,
-    gas_mscf: float,
-    water_bbl: float,
-    remarks: str | None = None,
+    log: ProductionLogCreate
 ):
     existing_log = (
         db.query(ProductionLog)
         .filter(
-            ProductionLog.well_id == well_id,
-            ProductionLog.production_date == production_date,
+            ProductionLog.well_id == log.well_id,
+            ProductionLog.log_date == log.log_date,
+            ProductionLog.log_time == log.log_time,
             ProductionLog.is_active == True
         )
         .first()
@@ -28,12 +26,13 @@ def create_production_log(
         raise ValueError("Active production log already exists")
 
     new_log = ProductionLog(
-        well_id=well_id,
-        production_date=production_date,
-        oil_bbl=oil_bbl,
-        gas_mscf=gas_mscf,
-        water_bbl=water_bbl,
-        remarks=remarks,
+        well_id=log.well_id,
+        log_date=log.log_date,
+        log_time=log.log_time,
+        oil_bbl=log.oil_bbl,
+        gas_mscf=log.gas_mscf,
+        water_bbl=log.water_bbl,
+        remarks=log.remarks,
         revision_count=0,
         is_active=True,
     )

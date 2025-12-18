@@ -8,7 +8,7 @@ from app.schemas.well import WellCreate, WellResponse
 router = APIRouter(prefix="/wells", tags=["Wells"])
 @router.post("/", response_model=WellResponse)
 def create_well(well: WellCreate, db: Session = Depends(get_db)):
-    existing = db.query(Well).filter(Well.well_name == well.well_name,  Well.well_name == well.well_name).first()
+    existing = db.query(Well).filter(Well.well_name == well.well_name).first()
     if existing:
         raise HTTPException(status_code=400, detail="Well already exists")
 

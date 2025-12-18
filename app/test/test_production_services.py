@@ -2,20 +2,20 @@ from app.services.production_log_services import (
     create_production_log,
     revise_production_log,
 )
-from app.schemas.production_log import ProductionLogUpdate
-from fastapi import HTTPException
-from datetime import date
-from typing import cast
-import pytest
+from app.schemas.production_log import ProductionLogCreate, ProductionLogUpdate
 
 def test_create_production_log(db):
-    log = create_production_log(
-        db=db,
+    log_data = ProductionLogCreate(
         well_id=1,
-        production_date=date(2025, 1, 1),
+        log_date=date(2025, 1, 1),
+        log_time=time(12, 0),
         oil_bbl=100,
         gas_mscf=50,
         water_bbl=20,
+    )
+    log = create_production_log(
+        db=db,
+        log=log_data
     )
 
     assert log.id is not None
@@ -28,34 +28,40 @@ def test_create_production_log(db):
 
 
 def test_duplicate_production_log_not_allowed(db):
-    create_production_log(
-        db=db,
+    log_data = ProductionLogCreate(
         well_id=1,
-        production_date=date(2025, 1, 1),
+        log_date=date(2025, 1, 1),
+        log_time=time(12, 0),
         oil_bbl=100,
         gas_mscf=50,
         water_bbl=20,
+    )
+    create_production_log(
+        db=db,
+        log=log_data
     )
 
     with pytest.raises(ValueError):
         create_production_log(
             db=db,
-            well_id=1,
-            production_date=date(2025, 1, 1),
-            oil_bbl=150,
-            gas_mscf=60,
-            water_bbl=30,
+            log=log_data
         )
 
 def test_revise_production_log_creates_new_revision(db):
-    original = create_production_log(
-        db=db,
+    log_data = ProductionLogCreate(
         well_id=1,
-        production_date=date.today(),
+        log_date=date.today(),
+        log_time=time(10, 0),
         oil_bbl=100,
         gas_mscf=50,
         water_bbl=20,
     )
+    original = create_production_log(
+        db=db,
+        log=log_data
+    )
+
+    original_id = original.id
 
     update = ProductionLogUpdate(
         oil_bbl=120
